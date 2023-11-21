@@ -1,8 +1,8 @@
-﻿using FitnessTelegramBot.Models.Sport;
-using FitnessTelegramBot.Models.User;
+﻿using SportChallenge.Models.Sport;
+using SportChallenge.Models.User;
 using System.Linq.Expressions;
 
-namespace FitnessTelegramBot.DataBase;
+namespace SportChallenge.DataBase;
 
 public class UserRepository : IRepository<User>
 {

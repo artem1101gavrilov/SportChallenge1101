@@ -1,6 +1,6 @@
-﻿using FitnessTelegramBot.Models.Sport;
+﻿using SportChallenge.Models.Sport;
 
-namespace FitnessTelegramBot.DataBase;
+namespace SportChallenge.DataBase;
 
 public class UnitOfWork
 {

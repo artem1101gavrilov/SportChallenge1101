@@ -1,9 +1,9 @@
-﻿using FitnessTelegramBot.DataBase;
-using FitnessTelegramBot.Models.Sport;
-using FitnessTelegramBot.Services;
-using FitnessTelegramBot.Training;
+﻿using SportChallenge.DataBase;
+using SportChallenge.Models.Sport;
+using SportChallenge.Services;
+using SportChallenge.Training;
 
-namespace FitnessTelegramBot.Factories;
+namespace SportChallenge.Factories;
 
 public class TrainingFactory
 {

@@ -1,12 +1,12 @@
-﻿using FitnessTelegramBot.Controllers;
-using FitnessTelegramBot.DataBase;
-using FitnessTelegramBot.Factories;
-using FitnessTelegramBot.Logger;
-using FitnessTelegramBot.Services;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SportChallenge.Controllers;
+using SportChallenge.DataBase;
 using SportChallenge.Extensions;
+using SportChallenge.Factories;
+using SportChallenge.Logger;
+using SportChallenge.Services;
 using Telegram.Bot;
 
 // todo list:
@@ -19,8 +19,7 @@ using Telegram.Bot;
 11) Добавить гантели
 12) Уведомлять человека, что он не занимался Н дней.
 13) Уведомлять, когда не пробовал какой-либо спорт.
-14) Убрать логирование ДБ в консоли и в файле. 
-15) Убрать из класса UnitOfWork в методах сохранение, сохраняться должно извне. 
+14) Убрать логирование ДБ в консоли. 
 16) Удаление последнего результата.
 17) Free тренировка во время выключенного бота
 18) Для планки пришел, что результат сохранен, хотя рекорд не побит и он никуда не сохранен, надо изменить текст.
@@ -48,7 +47,7 @@ await telegramController!.Start();
 
 //using var db = serviceProvider.GetService<ApplicationContext>();
 
-//var result = db.SportsExercises.OrderByDescending(_ => _.Date).FirstOrDefault(_ => _.UserId == 5179978672 && _.SportType == FitnessTelegramBot.Models.Sport.SportType.Squats);
+//var result = db.SportsExercises.OrderByDescending(_ => _.Date).FirstOrDefault(_ => _.UserId == 5179978672 && _.SportType == SportChallenge.Models.Sport.SportType.Squats);
 
 ////result.Count = 51;
 //db.SportsExercises.Remove(result);

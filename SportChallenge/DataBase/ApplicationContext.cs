@@ -1,8 +1,8 @@
-﻿using FitnessTelegramBot.Models.Sport;
-using FitnessTelegramBot.Models.User;
+﻿using SportChallenge.Models.Sport;
+using SportChallenge.Models.User;
 using Microsoft.EntityFrameworkCore;
 
-namespace FitnessTelegramBot.DataBase;
+namespace SportChallenge.DataBase;
 
 //dotnet ef migrations add NameMigration
 

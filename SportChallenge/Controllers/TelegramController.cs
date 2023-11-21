@@ -4,9 +4,9 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types;
 using Microsoft.Extensions.Logging;
-using FitnessTelegramBot.Services;
+using SportChallenge.Services;
 
-namespace FitnessTelegramBot.Controllers;
+namespace SportChallenge.Controllers;
 
 public class TelegramController
 {

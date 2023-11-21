@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace FitnessTelegramBot.Migrations
+namespace SportChallenge.Migrations
 {
     /// <inheritdoc />
     public partial class AddRecordsOneTime2 : Migration

@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace FitnessTelegramBot.Migrations
+namespace SportChallenge.Migrations
 {
     /// <inheritdoc />
     public partial class AddActiveTrainingTable : Migration

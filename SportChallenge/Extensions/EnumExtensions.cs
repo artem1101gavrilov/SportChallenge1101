@@ -1,6 +1,6 @@
-﻿using FitnessTelegramBot.Models.Sport;
+﻿using SportChallenge.Models.Sport;
 
-namespace FitnessTelegramBot.Extensions;
+namespace SportChallenge.Extensions;
 
 public static class EnumExtensions
 {

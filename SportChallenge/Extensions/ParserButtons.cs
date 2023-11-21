@@ -1,7 +1,7 @@
-﻿using FitnessTelegramBot.Models.Sport;
-using FitnessTelegramBot.Models.User;
+﻿using SportChallenge.Models.Sport;
+using SportChallenge.Models.User;
 
-namespace FitnessTelegramBot.Extensions;
+namespace SportChallenge.Extensions;
 
 public static class ParserButtons
 {

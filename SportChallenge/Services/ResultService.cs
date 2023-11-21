@@ -1,8 +1,8 @@
-﻿using FitnessTelegramBot.DataBase;
-using FitnessTelegramBot.Extensions;
+﻿using SportChallenge.DataBase;
+using SportChallenge.Extensions;
 using Telegram.Bot;
 
-namespace FitnessTelegramBot.Services;
+namespace SportChallenge.Services;
 
 public class ResultService
 {

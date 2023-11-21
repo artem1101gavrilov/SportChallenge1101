@@ -1,13 +1,13 @@
-﻿using FitnessTelegramBot.DataBase;
-using FitnessTelegramBot.Extensions;
-using FitnessTelegramBot.Factories;
-using FitnessTelegramBot.Models.Sport;
-using FitnessTelegramBot.Models.User;
+﻿using SportChallenge.DataBase;
+using SportChallenge.Extensions;
+using SportChallenge.Factories;
+using SportChallenge.Models.Sport;
+using SportChallenge.Models.User;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace FitnessTelegramBot.Services;
+namespace SportChallenge.Services;
 
 public partial class UserStateMachineService
 {

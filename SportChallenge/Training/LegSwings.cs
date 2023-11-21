@@ -1,10 +1,10 @@
 ﻿using Telegram.Bot.Types.ReplyMarkups;
-using FitnessTelegramBot.Extensions;
-using FitnessTelegramBot.Services;
-using FitnessTelegramBot.DataBase;
-using FitnessTelegramBot.Models.Sport;
+using SportChallenge.Extensions;
+using SportChallenge.Services;
+using SportChallenge.DataBase;
+using SportChallenge.Models.Sport;
 
-namespace FitnessTelegramBot.Training;
+namespace SportChallenge.Training;
 
 public class LegSwings : SportsExerciseBase
 {

@@ -1,7 +1,7 @@
-﻿using FitnessTelegramBot.Models.Sport;
+﻿using SportChallenge.Models.Sport;
 using System.Linq.Expressions;
 
-namespace FitnessTelegramBot.DataBase;
+namespace SportChallenge.DataBase;
 
 public class RecordsOneTimeRepository : IRepository<RecordsOneTime>
 {

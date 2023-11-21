@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace FitnessTelegramBot.Logger;
+namespace SportChallenge.Logger;
 
 public class FileLogger : ILogger
 {

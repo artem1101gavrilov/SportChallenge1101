@@ -1,4 +1,4 @@
-﻿namespace FitnessTelegramBot.Extensions;
+﻿namespace SportChallenge.Extensions;
 
 public static class Constants
 {

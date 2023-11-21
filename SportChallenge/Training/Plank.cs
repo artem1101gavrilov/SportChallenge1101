@@ -1,10 +1,10 @@
-﻿using FitnessTelegramBot.DataBase;
-using FitnessTelegramBot.Extensions;
-using FitnessTelegramBot.Models.Sport;
-using FitnessTelegramBot.Services;
+﻿using SportChallenge.DataBase;
+using SportChallenge.Extensions;
+using SportChallenge.Models.Sport;
+using SportChallenge.Services;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace FitnessTelegramBot.Training;
+namespace SportChallenge.Training;
 
 public class Plank : SportsExerciseBase
 {

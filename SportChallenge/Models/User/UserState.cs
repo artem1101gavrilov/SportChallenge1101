@@ -1,4 +1,4 @@
-﻿namespace FitnessTelegramBot.Models.User;
+﻿namespace SportChallenge.Models.User;
 
 public enum UserState
 {

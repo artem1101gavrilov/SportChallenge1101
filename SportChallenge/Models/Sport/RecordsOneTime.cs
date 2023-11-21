@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace FitnessTelegramBot.Models.Sport;
+namespace SportChallenge.Models.Sport;
 
 public class RecordsOneTime
 {

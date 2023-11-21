@@ -1,7 +1,7 @@
-﻿using FitnessTelegramBot.Models.Sport;
+﻿using SportChallenge.Models.Sport;
 using System.Linq.Expressions;
 
-namespace FitnessTelegramBot.DataBase;
+namespace SportChallenge.DataBase;
 
 interface IRepository<T> where T : class
 {

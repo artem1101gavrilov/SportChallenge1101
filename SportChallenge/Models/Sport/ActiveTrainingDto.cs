@@ -1,4 +1,4 @@
-﻿namespace FitnessTelegramBot.Models.Sport;
+﻿namespace SportChallenge.Models.Sport;
 
 public class ActiveTrainingDto
 {
