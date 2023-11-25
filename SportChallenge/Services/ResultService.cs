@@ -54,7 +54,7 @@ public class ResultService
     {
         await botClient.SendTextMessageAsync(
             chatId: chatId,
-            text: _unitOfWork.SportsExercises.GetAll().GetRecordsToday(_unitOfWork.Users.GetAll()) ?? "Рекордов нет"
+            text: _unitOfWork.SportsExercises.GetAll().GetRecordsToday(_unitOfWork.Users.Users) ?? "Рекордов нет"
         );
     }
 
@@ -62,7 +62,7 @@ public class ResultService
     {
         await botClient.SendTextMessageAsync(
             chatId: chatId,
-            text: _unitOfWork.SportsExercises.GetAll().GetRecordsAll(_unitOfWork.Users.GetAll()) ?? "Рекордов нет"
+            text: _unitOfWork.SportsExercises.GetAll().GetRecordsAll(_unitOfWork.Users.Users) ?? "Рекордов нет"
         );
     }
 
@@ -78,7 +78,7 @@ public class ResultService
     {
         await botClient.SendTextMessageAsync(
             chatId: chatId,
-            text: _unitOfWork.RecordsOneTime.GetAll().GetRecordsOneTimeAll(_unitOfWork.Users.GetAll()) ?? "Рекордов нет"
+            text: _unitOfWork.RecordsOneTime.GetAll().GetRecordsOneTimeAll(_unitOfWork.Users.Users) ?? "Рекордов нет"
         );
     }
 }

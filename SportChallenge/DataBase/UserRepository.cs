@@ -7,15 +7,18 @@ namespace SportChallenge.DataBase;
 public class UserRepository : IRepository<User>
 {
     private ApplicationContext _context;
+    public IDictionary<long, User> Users { get; } = new Dictionary<long, User>();
 
     public UserRepository(ApplicationContext context)
     {
         _context = context;
+        Users = _context.Users.ToDictionary(user => user.Id);
     }
 
     public void Create(User user)
     {
         _context.Users.Add(user);
+        Users.Add(user.Id, user);
     }
 
     public User Get(Expression<Func<User, bool>> filter)

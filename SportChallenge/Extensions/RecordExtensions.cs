@@ -6,7 +6,7 @@ namespace SportChallenge.Extensions;
 
 public static class RecordExtensions
 {
-    public static string? GetRecordsToday(this IEnumerable<SportsExercise> sportsExercises, IEnumerable<User> users)
+    public static string? GetRecordsToday(this IEnumerable<SportsExercise> sportsExercises, IDictionary<long, User> users)
     {
         var today = DateTime.Today;
 
@@ -31,7 +31,7 @@ public static class RecordExtensions
 
             foreach (var userCount in result.Users.OrderByDescending(_ => _.Count))
             {
-                var user = users.First(user => user.Id == userCount.UserId);
+                var user = users[userCount.UserId];
                 if (user.IsVisible)
                 {
                     stringBuilder.AppendLine($"{user.UserName} : {userCount.Count}");
@@ -44,7 +44,7 @@ public static class RecordExtensions
         return string.IsNullOrEmpty(records) ? null : records;
     }
 
-    public static string? GetRecordsAll(this IEnumerable<SportsExercise> sportsExercises, IEnumerable<User> users)
+    public static string? GetRecordsAll(this IEnumerable<SportsExercise> sportsExercises, IDictionary<long, User> users)
     {
         var recordsGroupedBySportType = sportsExercises.ToArray()
             .GroupBy(exercise => exercise.SportType)
@@ -67,7 +67,7 @@ public static class RecordExtensions
 
             foreach (var userCount in result.Users.OrderByDescending(_ => _.Count))
             {
-                var user = users.First(user => user.Id == userCount.UserId);
+                var user = users[userCount.UserId];
                 if (user.IsVisible)
                 {
                     stringBuilder.AppendLine($"{user.UserName} : {userCount.Count}");
@@ -80,7 +80,7 @@ public static class RecordExtensions
         return string.IsNullOrEmpty(records) ? null : records;
     }
 
-    public static string? GetRecordsOneTimeAll(this IEnumerable<RecordsOneTime> recordsOneTimes, IEnumerable<User> users)
+    public static string? GetRecordsOneTimeAll(this IEnumerable<RecordsOneTime> recordsOneTimes, IDictionary<long, User> users)
     {
         var recordsGroupedBySportType = recordsOneTimes.ToArray()
             .GroupBy(exercise => exercise.SportType)
@@ -104,7 +104,7 @@ public static class RecordExtensions
 
             foreach (var userCount in result.Users.OrderByDescending(_ => _.Count))
             {
-                var user = users.First(user => user.Id == userCount.UserId);
+                var user = users[userCount.UserId];
                 if (user.IsVisible)
                 {
                     stringBuilder.AppendLine($"{user.UserName} [{userCount.Date.ToShortDateString()}] : {userCount.Count}");
