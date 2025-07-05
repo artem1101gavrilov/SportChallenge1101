@@ -10,9 +10,14 @@ public class FileLogger : ILogger
     public FileLogger(string path)
     {
         filePath = path;
+        var directoryPath = Path.GetDirectoryName(filePath);
+        if (directoryPath != null && !Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
         if (!File.Exists(filePath))
         {
-            File.Create(filePath);
+            File.Create(filePath).Close();
         }
     }
 
