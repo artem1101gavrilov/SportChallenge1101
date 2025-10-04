@@ -16,6 +16,7 @@ public class TelegramController
     private readonly ITelegramBotClient _botClient;
     private readonly NotificationService _notificationController;
     private CancellationTokenSource _cancellationToken = null!;
+    private string _botUsername = string.Empty;
 
     public TelegramController(UserStateMachineService userStateMachineController, ResultService resultController, ITelegramBotClient botClient, NotificationService notificationController, ILogger<TelegramController> logger)
     {
@@ -43,6 +44,7 @@ public class TelegramController
             );
 
             var me = await _botClient.GetMeAsync();
+            _botUsername = me.Username!;
 
             await ChengeBotName("🔋 Sport Challenge 1101");
             //var delayTask = _notificationController.WhatsNew();
@@ -68,6 +70,21 @@ public class TelegramController
         }
     }
 
+    private string NormalizeCommand(string messageText)
+    {
+        if (string.IsNullOrEmpty(_botUsername))
+            return messageText;
+
+        // Проверяем, содержит ли команда упоминание бота
+        var botMention = $"@{_botUsername}";
+        if (messageText.EndsWith(botMention))
+        {
+            return messageText.Substring(0, messageText.Length - botMention.Length);
+        }
+
+        return messageText;
+    }
+
     private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         if (update is null
@@ -84,19 +101,22 @@ public class TelegramController
 
         _logger.LogInformation($"Received a '{messageText}' message in chat {chatId} - {userName}.");
 
-        if (_resultController.TryParse(messageText))
+        // Нормализуем команду (удаляем @username если есть)
+        var normalizedCommand = NormalizeCommand(messageText);
+
+        if (_resultController.TryParse(normalizedCommand))
         {
-            await _resultController.Parse(messageText, botClient, chatId);
+            await _resultController.Parse(normalizedCommand, botClient, chatId);
         }
-        else if (messageText == "/start")
+        else if (normalizedCommand == "/start")
         {
             await _userStateMachineController.StartUser(botClient, chatId, userName);
         }
-        else if (_userStateMachineController.TryProccessData(chatId, messageText!))
+        else if (_userStateMachineController.TryProccessData(chatId, normalizedCommand!))
         {
             try
             {
-                await _userStateMachineController.ProccessData(botClient, chatId, messageText!);
+                await _userStateMachineController.ProccessData(botClient, chatId, normalizedCommand!);
             }
             catch (Exception ex) 
             {
