@@ -4,8 +4,10 @@ using SportChallenge.Factories;
 using SportChallenge.Models.Sport;
 using SportChallenge.Models.User;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using Microsoft.Extensions.Logging;
 
 namespace SportChallenge.Services;
 
@@ -16,12 +18,14 @@ public partial class UserStateMachineService
     private readonly UnitOfWork _unitOfWork;
     private readonly TrainingFactory _trainingFactory;
     private readonly NotificationService _notificationController;
+    private readonly ILogger<UserStateMachineService> _logger;
 
-    public UserStateMachineService(UnitOfWork unitOfWork, TrainingFactory trainingFactory, NotificationService notificationController)
+    public UserStateMachineService(UnitOfWork unitOfWork, TrainingFactory trainingFactory, NotificationService notificationController, ILogger<UserStateMachineService> logger)
     {
         _unitOfWork = unitOfWork;
         _trainingFactory = trainingFactory;
         _notificationController = notificationController;
+        _logger = logger;
         InitializeUserStates();
     }
 
@@ -93,53 +97,64 @@ public partial class UserStateMachineService
 
     public async Task ProccessData(ITelegramBotClient botClient, long id, string data)
     {
-        if (ParserButtons.TryParse(data))
+        try
         {
-            switch (ParserButtons.Deserialize(data, out var result))
+            if (ParserButtons.TryParse(data))
             {
-                case UserState.Start:
-                    await ProccessStart(botClient, id, result.Last());
-                    break;
-                case UserState.ChoosingTraining:
-                    AddActiveTraining(id, Enum.Parse<SportType>(result.First()), 0);
-                    await ProccessChoosingTraining(botClient, id, result.Last());
-                    break;
-                case UserState.ActiveTrainingChoosing:
-                    AddActiveTraining(id, Enum.Parse<SportType>(result.First()), 0);
-                    await ProccessActiveTrainingChoosing(botClient, id, result.Last());
-                    break;
-                case UserState.ActiveTraining:
-                    AddActiveTraining(id, Enum.Parse<SportType>(result.First()), int.Parse(result.Skip(1).First()));
-                    await ProccessActiveTraining(botClient, id, result.Last());
-                    break;
+                switch (ParserButtons.Deserialize(data, out var result))
+                {
+                    case UserState.Start:
+                        await ProccessStart(botClient, id, result.Last());
+                        break;
+                    case UserState.ChoosingTraining:
+                        AddActiveTraining(id, Enum.Parse<SportType>(result.First()), 0);
+                        await ProccessChoosingTraining(botClient, id, result.Last());
+                        break;
+                    case UserState.ActiveTrainingChoosing:
+                        AddActiveTraining(id, Enum.Parse<SportType>(result.First()), 0);
+                        await ProccessActiveTrainingChoosing(botClient, id, result.Last());
+                        break;
+                    case UserState.ActiveTraining:
+                        AddActiveTraining(id, Enum.Parse<SportType>(result.First()), int.Parse(result.Skip(1).First()));
+                        await ProccessActiveTraining(botClient, id, result.Last());
+                        break;
+                }
+            }
+            else
+            {
+                switch (_states[id])
+                {
+                    case UserState.None:
+                        break;
+                    case UserState.Start:
+                        await ProccessStart(botClient, id, data);
+                        return;
+                    case UserState.ChoosingTraining:
+                        await ProccessChoosingTraining(botClient, id, data);
+                        return;
+                    case UserState.FreeTraining:
+                        await ProccessFreeTraining(botClient, id, data);
+                        return;
+                    case UserState.ActiveTrainingChoosing:
+                        await ProccessActiveTrainingChoosing(botClient, id, data);
+                        return;
+                    case UserState.ActiveTraining:
+                        await ProccessActiveTraining(botClient, id, data);
+                        return;
+                }
+
+                await botClient.SendTextMessageAsync(
+                    chatId: id,
+                    text: "Еще не готов функцинал."
+                );
             }
         }
-        else
+        catch (Exception ex)
         {
-            switch (_states[id])
-            {
-                case UserState.None:
-                    break;
-                case UserState.Start:
-                    await ProccessStart(botClient, id, data);
-                    return;
-                case UserState.ChoosingTraining:
-                    await ProccessChoosingTraining(botClient, id, data);
-                    return;
-                case UserState.FreeTraining:
-                    await ProccessFreeTraining(botClient, id, data);
-                    return;
-                case UserState.ActiveTrainingChoosing:
-                    await ProccessActiveTrainingChoosing(botClient, id, data);
-                    return;
-                case UserState.ActiveTraining:
-                    await ProccessActiveTraining(botClient, id, data);
-                    return;
-            }
-
+            _logger.LogError($"Error in ProccessData for user {id}: {ex.Message}");
             await botClient.SendTextMessageAsync(
                 chatId: id,
-                text: "Еще не готов функцинал."
+                text: "Произошла ошибка при обработке запроса. Попробуйте еще раз."
             );
         }
     }
@@ -238,7 +253,11 @@ public partial class UserStateMachineService
             using var photo = _trainingFactory.GetTraining(trainingChoosing.SportType)
                                               .GetActivePlanPhoto();
 
-            await botClient.SendPhotoAsync(id, new InputFileStream(photo));
+            var photoSent = await SendPhotoWithRetryAsync(botClient, id, new InputFileStream(photo));
+            if (!photoSent)
+            {
+                _logger.LogWarning($"Failed to send photo for {trainingChoosing.SportType} to user {id}, continuing with text message");
+            }
 
             var lastActiveTraining = _unitOfWork.ActiveTraining.GetAll().FirstOrDefault(_ => _.UserId == id &&
                                         _.SportType == trainingChoosing.SportType);
@@ -261,30 +280,45 @@ public partial class UserStateMachineService
 
     private async Task ProccessStart(ITelegramBotClient botClient, long id, string data)
     {
-        if (Enum.TryParse<SportType>(data, out var result))
+        try
         {
-            _states[id] = UserState.ChoosingTraining;
-            AddActiveTraining(id, result, 0);
-
-            if (_trainingFactory.GetTraining(result).HaveGifTraining())
+            if (Enum.TryParse<SportType>(data, out var result))
             {
-                using var gif = _trainingFactory.GetTraining(result)
-                                                .GetGif();
+                _states[id] = UserState.ChoosingTraining;
+                AddActiveTraining(id, result, 0);
 
-                await botClient.SendVideoAsync(id, new InputFileStream(gif));
+                if (_trainingFactory.GetTraining(result).HaveGifTraining())
+                {
+                    using var gif = _trainingFactory.GetTraining(result)
+                                                    .GetGif();
+
+                    var videoSent = await SendVideoWithRetryAsync(botClient, id, new InputFileStream(gif));
+                    if (!videoSent)
+                    {
+                        _logger.LogWarning($"Failed to send video for {result} to user {id}, continuing with text message");
+                    }
+                }
+
+                await botClient.SendTextMessageAsync(
+                    chatId: id,
+                    text: "Выберите режим тренировки:",
+                    replyMarkup: _trainingFactory.GetTraining(result).GetMenuButtons()
+                );
             }
-
-            await botClient.SendTextMessageAsync(
-                chatId: id,
-                text: "Выберите режим тренировки:",
-                replyMarkup: _trainingFactory.GetTraining(result).GetMenuButtons()
-            );
+            else
+            {
+                await botClient.SendTextMessageAsync(
+                    chatId: id,
+                    text: "Что-то пошло не так."
+                );
+            }
         }
-        else
+        catch (Exception ex)
         {
+            _logger.LogError($"Error in ProccessStart for user {id}: {ex.Message}");
             await botClient.SendTextMessageAsync(
                 chatId: id,
-                text: "Что-то пошло не так."
+                text: "Произошла ошибка при обработке запроса. Попробуйте еще раз."
             );
         }
     }
@@ -331,5 +365,67 @@ public partial class UserStateMachineService
     private void InitializeUserStates()
     {
         _states = _unitOfWork.Users.GetAll().ToDictionary(user => user.Id, _ => UserState.None);
+    }
+
+    private async Task<bool> SendVideoWithRetryAsync(ITelegramBotClient botClient, long chatId, InputFileStream video, int maxRetries = 3)
+    {
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                await botClient.SendVideoAsync(chatId, video);
+                return true;
+            }
+            catch (RequestException ex) when (ex.Message.Contains("timeout") || ex.Message.Contains("canceled"))
+            {
+                _logger.LogWarning($"Attempt {attempt}/{maxRetries} failed to send video to chat {chatId}: {ex.Message}");
+                
+                if (attempt == maxRetries)
+                {
+                    _logger.LogError($"Failed to send video to chat {chatId} after {maxRetries} attempts");
+                    return false;
+                }
+                
+                // Ждем перед следующей попыткой
+                await Task.Delay(TimeSpan.FromSeconds(attempt * 2));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error sending video to chat {chatId}: {ex.Message}");
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private async Task<bool> SendPhotoWithRetryAsync(ITelegramBotClient botClient, long chatId, InputFileStream photo, int maxRetries = 3)
+    {
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                await botClient.SendPhotoAsync(chatId, photo);
+                return true;
+            }
+            catch (RequestException ex) when (ex.Message.Contains("timeout") || ex.Message.Contains("canceled"))
+            {
+                _logger.LogWarning($"Attempt {attempt}/{maxRetries} failed to send photo to chat {chatId}: {ex.Message}");
+                
+                if (attempt == maxRetries)
+                {
+                    _logger.LogError($"Failed to send photo to chat {chatId} after {maxRetries} attempts");
+                    return false;
+                }
+                
+                // Ждем перед следующей попыткой
+                await Task.Delay(TimeSpan.FromSeconds(attempt * 2));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error sending photo to chat {chatId}: {ex.Message}");
+                return false;
+            }
+        }
+        return false;
     }
 }

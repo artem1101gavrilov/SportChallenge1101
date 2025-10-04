@@ -39,12 +39,29 @@ var serviceProvider = new ServiceCollection()
         .AddSingleton<TrainingFactory>()
         .AddSingleton<ResultService>()
         .AddSingleton<UnitOfWork>()
-        .AddSingleton<ITelegramBotClient>(new TelegramBotClient(TokenParser.GetToken()))
+        .AddSingleton<ITelegramBotClient>(provider =>
+        {
+            var httpClient = new HttpClient
+            {
+                Timeout = TimeSpan.FromMinutes(5) // Увеличиваем таймаут до 5 минут
+            };
+            return new TelegramBotClient(TokenParser.GetToken(), httpClient);
+        })
         .BuildServiceProvider();
 
 
 var telegramController = serviceProvider.GetService<TelegramController>();
-await telegramController!.Start();
+try
+{
+    await telegramController!.Start();
+}
+catch (Exception ex)
+{
+    var logger = serviceProvider.GetService<ILogger<TelegramController>>();
+    logger?.LogError($"Fatal error in bot: {ex}");
+    Console.WriteLine($"Fatal error: {ex.Message}");
+    Environment.Exit(1);
+}
 
 //using var db = serviceProvider.GetService<ApplicationContext>();
 

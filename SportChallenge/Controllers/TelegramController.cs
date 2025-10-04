@@ -31,30 +31,40 @@ public class TelegramController
     {
         using (_cancellationToken = new())
         {
-            ReceiverOptions receiverOptions = new()
+            try
             {
-                AllowedUpdates = Array.Empty<UpdateType>()
-            };
+                ReceiverOptions receiverOptions = new()
+                {
+                    AllowedUpdates = Array.Empty<UpdateType>()
+                };
 
-            _botClient.StartReceiving(
-                updateHandler: HandleUpdateAsync,
-                pollingErrorHandler: HandlePollingErrorAsync,
-                receiverOptions: receiverOptions,
-                cancellationToken: _cancellationToken.Token
-            );
+                _botClient.StartReceiving(
+                    updateHandler: HandleUpdateAsync,
+                    pollingErrorHandler: HandlePollingErrorAsync,
+                    receiverOptions: receiverOptions,
+                    cancellationToken: _cancellationToken.Token
+                );
 
-            var me = await _botClient.GetMeAsync();
-            _botUsername = me.Username!;
+                var me = await _botClient.GetMeAsync();
+                _botUsername = me.Username!;
 
-            await ChengeBotName("🔋 Sport Challenge 1101");
-            //var delayTask = _notificationController.WhatsNew();
+                await ChengeBotName("🔋 Sport Challenge 1101");
+                //var delayTask = _notificationController.WhatsNew();
 
-            _logger.LogInformation($"Start listening for @{me.Username}");
-            Console.ReadLine();
+                _logger.LogInformation($"Start listening for @{me.Username}");
+                Console.ReadLine();
 
-            await ChengeBotName("\U0001faab Sport Challenge 1101");
-
-            _cancellationToken.Cancel();
+                await ChengeBotName("\U0001faab Sport Challenge 1101");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Critical error in bot startup: {ex}");
+                throw; // Перебрасываем исключение для обработки на верхнем уровне
+            }
+            finally
+            {
+                _cancellationToken.Cancel();
+            }
         }
     }
 
@@ -106,7 +116,25 @@ public class TelegramController
 
         if (_resultController.TryParse(normalizedCommand))
         {
-            await _resultController.Parse(normalizedCommand, botClient, chatId);
+            try
+            {
+                await _resultController.Parse(normalizedCommand, botClient, chatId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error processing result command for chat {chatId}: {ex}");
+                try
+                {
+                    await botClient.SendTextMessageAsync(
+                        chatId: chatId,
+                        text: "Произошла ошибка при получении результатов. Попробуйте еще раз."
+                    );
+                }
+                catch (Exception sendEx)
+                {
+                    _logger.LogError($"Failed to send error message to chat {chatId}: {sendEx}");
+                }
+            }
         }
         else if (normalizedCommand == "/start")
         {
@@ -120,11 +148,18 @@ public class TelegramController
             }
             catch (Exception ex) 
             {
-                _logger.LogError(ex.ToString());
-                await botClient.SendTextMessageAsync(
-                    chatId: chatId,
-                    text: "Что-то пошло не так."
-                );
+                _logger.LogError($"Error processing user data for chat {chatId}: {ex}");
+                try
+                {
+                    await botClient.SendTextMessageAsync(
+                        chatId: chatId,
+                        text: "Произошла ошибка при обработке запроса. Попробуйте еще раз."
+                    );
+                }
+                catch (Exception sendEx)
+                {
+                    _logger.LogError($"Failed to send error message to chat {chatId}: {sendEx}");
+                }
             }
         }
         else
