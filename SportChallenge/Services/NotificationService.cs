@@ -46,9 +46,12 @@ public class NotificationService
                                                          .Distinct();
             var users = _unitOfWork.Users.GetCollection(_ => !activeUsers.Contains(_.Id));
 
-            var message = sportType == SportType.Plank
-                            ? $"{sportsmen.UserName} сделал/а упражнение {sportType.GetRussianSportType()} и продержался(-ась) {count} секунд. Может пора тоже пострадать?"
-                            : $"{sportsmen.UserName} сделал/а упражнение {sportType.GetRussianSportType()} {count} раз. Может пора тоже позаниматься, ленивая жопа?";
+            var message = sportType switch
+            {
+                SportType.Plank => $"{sportsmen.UserName} сделал/а упражнение {sportType.GetRussianSportType()} и продержался(-ась) {count} секунд. Может пора тоже пострадать?",
+                SportType.Walking => $"{sportsmen.UserName} сделал/а упражнение {sportType.GetRussianSportType()} и прошел(-а) {count} шагов. Может пора тоже прогуляться?",
+                _ => $"{sportsmen.UserName} сделал/а упражнение {sportType.GetRussianSportType()} {count} раз. Может пора тоже позаниматься, ленивая жопа?"
+            };
 
             foreach (var user in users)
             {
@@ -136,9 +139,12 @@ public class NotificationService
         var sportsmen = _unitOfWork.Users.Get(u => u.Id == chatId);
         var users = _unitOfWork.Users.GetCollection(_ => _.Id != chatId);
 
-        var message = sportType == SportType.Plank
-                        ? $"{sportsmen.UserName} установил/а рекорд в упражнении {sportType.GetRussianSportType()} и продержался {count} секунд."
-                        : $"{sportsmen.UserName} установил/а рекорд в упражнении {sportType.GetRussianSportType()}, сделав {count} раз.";
+        var message = sportType switch
+        {
+            SportType.Plank => $"{sportsmen.UserName} установил/а рекорд в упражнении {sportType.GetRussianSportType()} и продержался {count} секунд.",
+            SportType.Walking => $"{sportsmen.UserName} установил/а рекорд в упражнении {sportType.GetRussianSportType()} и прошел(-а) {count} шагов.",
+            _ => $"{sportsmen.UserName} установил/а рекорд в упражнении {sportType.GetRussianSportType()}, сделав {count} раз."
+        };
 
         foreach (var user in users)
         {

@@ -56,6 +56,10 @@ public partial class UserStateMachineService
             new[]
             {
                 InlineKeyboardButton.WithCallbackData(SportType.PullUps.GetRussianSportType(), ParserButtons.SerializeMenuButton(SportType.PullUps))
+            },
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData(SportType.Walking.GetRussianSportType(), ParserButtons.SerializeMenuButton(SportType.Walking))
             }
         });
 
@@ -237,9 +241,12 @@ public partial class UserStateMachineService
         var trainingChoosing = _activeTraining.First(_ => _.Id == id);
         if (data == Constants.Free && _trainingFactory.GetTraining(trainingChoosing.SportType).HaveFreeTraining())
         {
-            var message = trainingChoosing.SportType == SportType.Plank
-                            ? "Напишите сколько секунд смогли продержаться:"
-                            : "Напишите сколько раз смогли выполнить:";
+            var message = trainingChoosing.SportType switch
+            {
+                SportType.Plank => "Напишите сколько секунд смогли продержаться:",
+                SportType.Walking => "Напишите сколько шагов прошли:",
+                _ => "Напишите сколько раз смогли выполнить:"
+            };
             _states[id] = UserState.FreeTraining;
             await botClient.SendTextMessageAsync(
                 chatId: id,

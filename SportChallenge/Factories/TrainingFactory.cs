@@ -22,6 +22,7 @@ public class TrainingFactory
             { SportType.BurpeeV2, new BurpeeV2(unitOfWork, notificationController) },
             { SportType.Scissors, new Scissors(unitOfWork, notificationController) },
             { SportType.LegSwings, new LegSwings(unitOfWork, notificationController) },
+            { SportType.Walking, new Walking(unitOfWork, notificationController) },
         };
     }
 

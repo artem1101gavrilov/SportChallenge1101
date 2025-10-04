@@ -37,5 +37,9 @@ public enum SportType
     /// <summary>
     /// Махи ногами
     /// </summary>
-    LegSwings
+    LegSwings,
+    /// <summary>
+    /// Ходьба
+    /// </summary>
+    Walking
 }
